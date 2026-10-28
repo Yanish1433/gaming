@@ -1,0 +1,16 @@
+{
+  "name": "arena-nepal",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Arena Nepal: a free, no-betting gaming community site for PUBG Mobile, Free Fire, eFootball and EA FC Mobile.",
+  "scripts": {
+    "install:all": "npm install && npm --prefix server install && npm --prefix client install",
+    "dev": "concurrently -n server,client -c red,yellow \"npm --prefix server run dev\" \"npm --prefix client run dev\"",
+    "seed": "npm --prefix server run seed",
+    "seed:clear-demo": "npm --prefix server run seed:clear-demo",
+    "start": "npm --prefix server start"
+  },
+  "devDependencies": {
+    "concurrently": "^10.0.6"
+  }
+}
