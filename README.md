@@ -72,15 +72,6 @@ npm run dev           # API on http://localhost:5000, site on http://localhost:5
 
 The Vite dev server proxies `/api` and `/uploads` to the API, so just open <http://localhost:5173>.
 
-### Seeded logins
-
-| Role | Login | Password |
-|---|---|---|
-| Admin | `admin@arena.np` | `Admin@123` |
-| Organiser | `org@arena.np` | `Org@1234` |
-| Players | `ktm_sniper`, `pokhara_rush`, `birgunj_boss`, `dharan_dragon`, … (12 total) | `Player@123` |
-
-Log in with either email or username. Demo players are flagged `isDemo` (visible in the admin user list). Clear them with `npm run seed:clear-demo` before real launch.
 
 ## How it works
 
