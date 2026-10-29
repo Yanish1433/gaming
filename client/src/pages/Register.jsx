@@ -52,7 +52,7 @@ export default function Register() {
     try {
       justJoined.current = true
       await register({ ...form, username: form.username.trim(), email: form.email.trim() })
-      navigate('/settings', { replace: true, state: { welcome: true } })
+      navigate('/games', { replace: true })
     } catch (err) {
       justJoined.current = false
       setError(err)

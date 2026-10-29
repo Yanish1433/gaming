@@ -27,20 +27,28 @@ export default function Login() {
   const { login, user } = useAuth()
   const navigate = useNavigate()
   const location = useLocation()
-  const from = location.state?.from ?? '/'
+  const requestedDestination = location.state?.from
+  const from = requestedDestination && requestedDestination !== '/' ? requestedDestination : '/games'
   const [form, setForm] = useState({ emailOrUsername: '', password: '' })
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState(null)
 
-  if (user) return <Navigate to={from} replace />
+  const dashboardDestination = user?.role === 'admin' || user?.role === 'organiser'
+    ? (from.startsWith('/admin') ? from : '/admin')
+    : from
+
+  if (user) return <Navigate to={dashboardDestination} replace />
 
   const submit = async (e) => {
     e.preventDefault()
     setBusy(true)
     setError(null)
     try {
-      await login(form.emailOrUsername.trim(), form.password)
-      navigate(from, { replace: true })
+      const loggedInUser = await login(form.emailOrUsername.trim(), form.password)
+      const destination = loggedInUser?.role === 'admin' || loggedInUser?.role === 'organiser'
+        ? (from.startsWith('/admin') ? from : '/admin')
+        : from
+      navigate(destination, { replace: true })
     } catch (err) {
       setError(err)
     } finally {

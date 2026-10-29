@@ -13,12 +13,16 @@ export function useFetch(path, params) {
       return
     }
     const my = ++seq.current
-    setState((s) => ({ ...s, loading: true, error: null }))
+    setState((s) => ({ ...s, loading: s.data == null, error: null }))
     try {
       const { data } = await api.get(path, { params })
       if (my === seq.current) setState({ data, error: null, loading: false })
     } catch (error) {
-      if (my === seq.current) setState({ data: null, error, loading: false })
+      if (my === seq.current) {
+        setState((s) => s.data == null
+          ? { data: null, error, loading: false }
+          : { ...s, loading: false })
+      }
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [key])

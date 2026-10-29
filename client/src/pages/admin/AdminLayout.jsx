@@ -1,9 +1,9 @@
 import { Suspense, useEffect, useState } from 'react'
-import { NavLink, Outlet, useLocation } from 'react-router'
+import { NavLink, Outlet, useLocation, useNavigate } from 'react-router'
 import { AnimatePresence, motion } from 'motion/react'
 import {
   BarChart3, Bell, ClipboardList, Coins, Database, Flag, Gauge, Gavel, Handshake, LineChart, Megaphone, Menu, Package,
-  ScrollText, Settings2, Store, Swords, Trophy, UserCheck, Users, X,
+  ScrollText, Settings2, Store, Swords, Trophy, UserCheck, Users, X, LogOut,
 } from 'lucide-react'
 import { useAuth } from '../../context/AuthContext'
 import Skeleton from '../../components/ui/Skeleton'
@@ -89,8 +89,9 @@ function SideNav({ isAdmin, onNavigate }) {
 }
 
 export default function AdminLayout() {
-  const { user } = useAuth()
+  const { user, logout } = useAuth()
   const location = useLocation()
+  const navigate = useNavigate()
   const isAdmin = user?.role === 'admin'
   const [drawer, setDrawer] = useState(false)
   useEffect(() => setDrawer(false), [location.pathname])
@@ -104,6 +105,13 @@ export default function AdminLayout() {
         </p>
         <div className="sticky top-20">
           <SideNav isAdmin={isAdmin} />
+          <button
+            type="button"
+            onClick={() => { logout(); navigate('/login', { replace: true }) }}
+            className="mt-6 flex w-full items-center gap-2 border-2 border-paper/25 px-3 py-1.5 text-[15px] font-semibold text-paper/65 hover:border-crimson hover:text-paper"
+          >
+            <LogOut className="size-4" /> Log out
+          </button>
         </div>
       </aside>
 
@@ -133,6 +141,13 @@ export default function AdminLayout() {
                 </button>
               </div>
               <SideNav isAdmin={isAdmin} onNavigate={() => setDrawer(false)} />
+              <button
+                type="button"
+                onClick={() => { logout(); navigate('/login', { replace: true }) }}
+                className="mt-6 flex w-full items-center gap-2 border-2 border-paper/25 px-3 py-1.5 text-[15px] font-semibold text-paper/65"
+              >
+                <LogOut className="size-4" /> Log out
+              </button>
             </motion.aside>
           </motion.div>
         )}

@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { Link, useParams } from 'react-router'
 import { CalendarClock, Flag, MapPin, ShieldAlert, Trophy } from 'lucide-react'
 import Button from '../components/ui/Button'
@@ -76,6 +76,23 @@ export default function ChallengeDetail() {
   const [room, setRoom] = useState({ roomId: '', password: '' })
   const [dispute, setDispute] = useState({ reason: '', file: null })
   const [disputeSent, setDisputeSent] = useState(false)
+
+  useEffect(() => {
+    if (!id) return undefined
+
+    const refreshWhenVisible = () => {
+      if (document.visibilityState === 'visible') reload()
+    }
+    const interval = window.setInterval(refreshWhenVisible, 3000)
+    window.addEventListener('focus', refreshWhenVisible)
+    document.addEventListener('visibilitychange', refreshWhenVisible)
+
+    return () => {
+      window.clearInterval(interval)
+      window.removeEventListener('focus', refreshWhenVisible)
+      document.removeEventListener('visibilitychange', refreshWhenVisible)
+    }
+  }, [id, reload])
 
   if (loading)
     return (

@@ -1,13 +1,13 @@
-import { useRef, useState } from 'react'
-import { useParams, useSearchParams } from 'react-router'
+import { useEffect, useRef, useState } from 'react'
+import { Link, useParams, useSearchParams } from 'react-router'
 import { motion, useReducedMotion, useScroll, useTransform } from 'motion/react'
 import { Plus } from 'lucide-react'
 import Tabs from '../components/ui/Tabs'
 import Button from '../components/ui/Button'
 import Sticker from '../components/ui/Sticker'
-import Empty, { ErrorState } from '../components/ui/Empty'
+import Empty, { ErrorState, FormError } from '../components/ui/Empty'
 import { SkeletonList } from '../components/ui/Skeleton'
-import { Segmented, Select } from '../components/ui/Input'
+import Input, { Segmented, Select } from '../components/ui/Input'
 import { CountUp, Reveal, RevealItem, TornEdge } from '../components/ui/Bits'
 import ChallengeCard from '../components/feature/ChallengeCard'
 import MatchCard from '../components/feature/MatchCard'
@@ -25,6 +25,8 @@ import MapArt from '../components/art/MapArt'
 import { AnnouncementTicker } from '../components/feature/Announcements'
 import SponsorSlot from '../components/feature/SponsorSlot'
 import { useSite } from '../context/SiteContext'
+import { useAuth } from '../context/AuthContext'
+import { api } from '../lib/api'
 
 const OBJECT_LABEL = {
   pubg: 'Level 3 helmet and a pan',
@@ -305,8 +307,91 @@ function TopupTab({ game }) {
   )
 }
 
+const GAME_ID_LABELS = {
+  pubg: 'PUBG ID',
+  freefire: 'Free Fire ID',
+  efootball: 'eFootball ID',
+  fcmobile: 'EA FC Mobile ID',
+}
+
+function GameIdGate({ game, onContinue }) {
+  const { user, setUser, loading } = useAuth()
+  const [value, setValue] = useState('')
+  const [busy, setBusy] = useState(false)
+  const [error, setError] = useState(null)
+
+  useEffect(() => {
+    setValue(user?.gameIds?.[game.slug] ?? '')
+  }, [game.slug, user?.gameIds])
+
+  if (loading) return <div className="mx-auto max-w-lg px-4 py-20"><SkeletonList count={1} className="h-48" /></div>
+
+  if (!user) {
+    return (
+      <div className="mx-auto max-w-lg px-4 py-20">
+        <div className="drop-hard">
+          <div className="notch border-2 border-paper bg-paper p-7 text-ink">
+            <p className="display text-4xl">Log in to enter {game.name}</p>
+            <p className="mt-2 text-ink/70">Your game ID stays saved with your account.</p>
+            <div className="mt-6 flex flex-wrap gap-3">
+              <Button to={`/login`} state={{ from: `/games/${game.slug}` }}>Log in</Button>
+              <Button to="/register" variant="outline">Create account</Button>
+            </div>
+          </div>
+        </div>
+      </div>
+    )
+  }
+
+  const submit = async (e) => {
+    e.preventDefault()
+    const gameId = value.trim()
+    if (!gameId) return setError(new Error(`${GAME_ID_LABELS[game.slug] ?? 'Game ID'} is required.`))
+    setBusy(true)
+    setError(null)
+    try {
+      const { data } = await api.patch('/users/me', { gameIds: { [game.slug]: gameId } })
+      setUser(data?.user ?? data)
+      onContinue(gameId)
+    } catch (err) {
+      setError(err)
+    } finally {
+      setBusy(false)
+    }
+  }
+
+  return (
+    <div className="mx-auto max-w-lg px-4 py-20">
+      <div className="drop-hard">
+        <form onSubmit={submit} className="notch border-2 border-paper bg-paper p-7 text-ink">
+          <p className="font-mono text-xs uppercase tracking-[0.25em] text-ink/60">Before entering</p>
+          <h1 className="display mt-2 text-5xl">{game.name}</h1>
+          <p className="mt-2 text-ink/70">Enter your {GAME_ID_LABELS[game.slug] ?? 'game ID'}. You can update it here whenever you enter.</p>
+          <div className="mt-6">
+            <Input
+              label={GAME_ID_LABELS[game.slug] ?? 'Game ID'}
+              value={value}
+              onChange={(e) => setValue(e.target.value)}
+              placeholder="Enter your ID"
+              className="font-mono"
+              required
+            />
+          </div>
+          <FormError error={error} />
+          <div className="mt-5 flex flex-wrap items-center gap-3">
+            <Button type="submit" busy={busy}>Save and enter</Button>
+            <Link to="/games" className="font-mono text-sm font-semibold uppercase underline underline-offset-4">Back to games</Link>
+          </div>
+        </form>
+      </div>
+    </div>
+  )
+}
+
 export default function GameHub() {
   const { slug } = useParams()
+  const [idConfirmed, setIdConfirmed] = useState(false)
+  useEffect(() => setIdConfirmed(false), [slug])
   const reduce = useReducedMotion()
   const { games } = useGames()
   const game = games.find((g) => g.slug === slug)
@@ -322,6 +407,14 @@ export default function GameHub() {
   const { settings } = useSite()
 
   if (!game) return <NotFound />
+  if (!idConfirmed) {
+    return (
+      <GameIdGate
+        game={game}
+        onContinue={() => setIdConfirmed(true)}
+      />
+    )
+  }
   const paused = settings.gamesEnabled?.[game.slug] === false
 
   const s = summary.data

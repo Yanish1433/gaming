@@ -1,9 +1,10 @@
 import { lazy, Suspense } from 'react'
-import { Route, Routes } from 'react-router'
+import { Navigate, Route, Routes } from 'react-router'
 import Layout from './components/layout/Layout'
 import { RequireAuth, RequireRole } from './routes/guards'
 import Skeleton from './components/ui/Skeleton'
 import Home from './pages/Home'
+import { useAuth } from './context/AuthContext'
 
 const Login = lazy(() => import('./pages/Login'))
 const Register = lazy(() => import('./pages/Register'))
@@ -16,6 +17,7 @@ const TournamentDetail = lazy(() => import('./pages/TournamentDetail'))
 const Leaderboard = lazy(() => import('./pages/Leaderboard'))
 const Profile = lazy(() => import('./pages/Profile'))
 const Settings = lazy(() => import('./pages/Settings'))
+const BecomeOrganiser = lazy(() => import('./pages/BecomeOrganiser'))
 const Store = lazy(() => import('./pages/Store'))
 const Orders = lazy(() => import('./pages/Orders'))
 const Notifications = lazy(() => import('./pages/Notifications'))
@@ -54,12 +56,22 @@ function PageFallback() {
 const authed = (el) => <RequireAuth>{el}</RequireAuth>
 const admin = (el) => <RequireRole roles={['admin']}>{el}</RequireRole>
 
+function RoleAwareHome() {
+  const { user, loading } = useAuth()
+  if (loading) return <PageFallback />
+  if (user?.role === 'admin' || user?.role === 'organiser') {
+    return <Navigate to="/admin" replace />
+  }
+  if (user) return <Navigate to="/games" replace />
+  return <Home />
+}
+
 export default function App() {
   return (
     <Suspense fallback={<PageFallback />}>
       <Routes>
         <Route element={<Layout />}>
-          <Route index element={<Home />} />
+          <Route index element={<RoleAwareHome />} />
           <Route path="login" element={<Login />} />
           <Route path="register" element={<Register />} />
           <Route path="games" element={<Games />} />
@@ -72,36 +84,38 @@ export default function App() {
           <Route path="stats" element={<Stats />} />
           <Route path="u/:username" element={<Profile />} />
           <Route path="settings" element={authed(<Settings />)} />
+          <Route path="become-organiser" element={authed(<BecomeOrganiser />)} />
           <Route path="store" element={<Store />} />
           <Route path="orders" element={authed(<Orders />)} />
           <Route path="notifications" element={authed(<Notifications />)} />
-          <Route
-            path="admin"
-            element={
-              <RequireRole roles={['admin', 'organiser']}>
-                <AdminLayout />
-              </RequireRole>
-            }
-          >
-            <Route index element={<AdminDashboard />} />
-            <Route path="users" element={admin(<AdminUsers />)} />
-            <Route path="disputes" element={admin(<AdminDisputes />)} />
-            <Route path="orders" element={admin(<AdminOrders />)} />
-            <Route path="products" element={admin(<AdminProducts />)} />
-            <Route path="matches" element={<AdminMatches />} />
-            <Route path="challenges" element={admin(<AdminChallenges />)} />
-            <Route path="tournaments" element={admin(<AdminTournaments />)} />
-            <Route path="applications" element={admin(<AdminApplications />)} />
-            <Route path="reports" element={admin(<AdminReports />)} />
-            <Route path="revenue" element={admin(<AdminRevenue />)} />
-            <Route path="announcements" element={admin(<AdminAnnouncements />)} />
-            <Route path="sponsors" element={admin(<AdminSponsors />)} />
-            <Route path="stats" element={admin(<AdminStats />)} />
-            <Route path="settings" element={admin(<AdminSettings />)} />
-            <Route path="audit" element={admin(<AdminAudit />)} />
-            <Route path="demo" element={admin(<AdminDemo />)} />
-          </Route>
           <Route path="*" element={<NotFound />} />
+        </Route>
+
+        <Route
+          path="admin"
+          element={
+            <RequireRole roles={['admin', 'organiser']}>
+              <AdminLayout />
+            </RequireRole>
+          }
+        >
+          <Route index element={<AdminDashboard />} />
+          <Route path="users" element={admin(<AdminUsers />)} />
+          <Route path="disputes" element={admin(<AdminDisputes />)} />
+          <Route path="orders" element={admin(<AdminOrders />)} />
+          <Route path="products" element={admin(<AdminProducts />)} />
+          <Route path="matches" element={<AdminMatches />} />
+          <Route path="challenges" element={admin(<AdminChallenges />)} />
+          <Route path="tournaments" element={admin(<AdminTournaments />)} />
+          <Route path="applications" element={admin(<AdminApplications />)} />
+          <Route path="reports" element={admin(<AdminReports />)} />
+          <Route path="revenue" element={admin(<AdminRevenue />)} />
+          <Route path="announcements" element={admin(<AdminAnnouncements />)} />
+          <Route path="sponsors" element={admin(<AdminSponsors />)} />
+          <Route path="stats" element={admin(<AdminStats />)} />
+          <Route path="settings" element={admin(<AdminSettings />)} />
+          <Route path="audit" element={admin(<AdminAudit />)} />
+          <Route path="demo" element={admin(<AdminDemo />)} />
         </Route>
       </Routes>
     </Suspense>

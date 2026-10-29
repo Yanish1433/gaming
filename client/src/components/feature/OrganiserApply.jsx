@@ -20,7 +20,7 @@ const TYPES = [
   { value: 'other', label: 'Other' },
 ]
 
-// "Become an organiser" on Settings: shows the latest application's status, or the form.
+// Shows the latest organiser application status, or the application form.
 export default function OrganiserApply() {
   const { user } = useAuth()
   const { toast } = useUi()

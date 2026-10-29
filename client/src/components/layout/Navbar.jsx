@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { Link, NavLink, useLocation, useNavigate } from 'react-router'
 import { AnimatePresence, motion } from 'motion/react'
-import { Bell, ChevronDown, LogOut, Package, Settings, Shield, User } from 'lucide-react'
+import { Bell, ChevronDown, Handshake, LogOut, Package, Settings, Shield, User } from 'lucide-react'
 import { useAuth } from '../../context/AuthContext'
 import { api, asList } from '../../lib/api'
 import { Avatar } from '../ui/Bits'
@@ -68,6 +68,22 @@ export default function Navbar() {
         <Logo />
         <nav className="ml-4 hidden items-center gap-1 md:flex" aria-label="Main">
           <GamesMenu />
+          {user?.role === 'player' && (
+            <NavLink
+              to="/become-organiser"
+              className={({ isActive }) =>
+                `relative flex items-center gap-1.5 px-3 py-2 font-semibold transition-colors ${isActive ? 'text-paper' : 'text-paper/60 hover:text-paper'}`
+              }
+            >
+              {({ isActive }) => (
+                <>
+                  <Handshake className="size-4" />
+                  Become organiser
+                  {isActive && <motion.span layoutId="nav-underline" className="absolute inset-x-3 -bottom-[13px] h-1 bg-crimson" />}
+                </>
+              )}
+            </NavLink>
+          )}
           {LINKS.filter((l) => l.to !== '/games').map((l) => (
             <NavLink
               key={l.to}

@@ -4,7 +4,6 @@ import Input, { Select, Textarea } from '../components/ui/Input'
 import Button from '../components/ui/Button'
 import { FormError } from '../components/ui/Empty'
 import { PageHead } from '../components/ui/Bits'
-import OrganiserApply from '../components/feature/OrganiserApply'
 import { useAuth } from '../context/AuthContext'
 import { api } from '../lib/api'
 import { GAMES, PROVINCES } from '../lib/games'
@@ -59,7 +58,7 @@ export default function Settings() {
             {GAMES.map((g) => (
               <div key={g.slug} className="border-l-4 pl-3" style={{ borderColor: g.accent }}>
                 <Input
-                  label={`${g.name} ${g.slug === 'pubg' || g.slug === 'freefire' ? 'UID' : 'username'}`}
+                  label={`${g.name} ID`}
                   className="font-mono"
                   value={form.gameIds[g.slug] ?? ''}
                   onChange={(e) => setForm({ ...form, gameIds: { ...form.gameIds, [g.slug]: e.target.value } })}
@@ -81,9 +80,6 @@ export default function Settings() {
           {saved && <span className="font-mono text-sm text-[#2BB673]">Saved ✓</span>}
         </div>
       </form>
-      <div className="mt-14">
-        <OrganiserApply />
-      </div>
     </div>
   )
 }
